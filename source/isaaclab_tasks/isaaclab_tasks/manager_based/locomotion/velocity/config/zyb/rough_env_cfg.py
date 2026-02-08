@@ -5,11 +5,32 @@ EnvCfg for ZYB Quadruped in Rough Terrain for Velocity Task
 from isaaclab.utils import configclass
 from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import LocomotionVelocityRoughEnvCfg
 from isaaclab_assets.robots.zyb import ZYB_QUADRUPED_ARM_Cfg  # isort: skip
+from isaaclab_tasks.manager_based.locomotion.velocity import mdp
 
 @configclass
 class ZybQuadrupedArmRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
     def __post_init__(self):
         super().__post_init__()
+        # ! redefine action space(except wheels)
+        self.actions.joint_pos.joint_names = [
+            "FL_hip_joint", "FL_thigh_joint", "FL_calf_joint",
+            "FR_hip_joint", "FR_thigh_joint", "FR_calf_joint",
+            "RL_hip_joint", "RL_thigh_joint", "RL_calf_joint",
+            "RR_hip_joint", "RR_thigh_joint", "RR_calf_joint",
+        ]
+        # action scale
+        self.actions.joint_pos.scale = 0.2
+
+        # define wheels(4 dementions)
+        self.actions.wheel_vel = mdp.JointVelocityActionCfg(
+            asset_name="robot",
+            joint_names=["FL_foot_joint", "FR_foot_joint", "RL_foot_joint", "RR_foot_joint"],
+            scale=40.0,            # action[-1,1] -> 目标速度[-40,40] rad/s（你可再调）
+            use_default_offset=False,  # 轮子一般不需要 default offset
+            preserve_order=True,
+        )
+
+
 
         self.scene.robot = ZYB_QUADRUPED_ARM_Cfg.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/base"
@@ -19,8 +40,6 @@ class ZybQuadrupedArmRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.scene.terrain.terrain_generator.sub_terrains["random_rough"].noise_range = (0.02, 0.1)
         self.scene.terrain.terrain_generator.sub_terrains["random_rough"].noise_step = 0.02
 
-        # action scale
-        self.actions.joint_pos.scale = 0.2
 
         # events
         self.events.push_robot = None
