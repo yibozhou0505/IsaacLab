@@ -26,7 +26,7 @@ class ZybQuadrupedArmRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.actions.wheel_vel = mdp.JointVelocityActionCfg(
             asset_name="robot",
             joint_names=["FL_foot_joint", "FR_foot_joint", "RL_foot_joint", "RR_foot_joint"],
-            scale=0.5,            
+            scale=0.1,
             use_default_offset=False,  # 轮子一般不需要 default offset
             preserve_order=True,
         )
@@ -71,26 +71,26 @@ class ZybQuadrupedArmRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.events.base_com = None
 
         # rewards
-        # self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
-        # self.rewards.feet_air_time.weight = 0.01
-        self.rewards.feet_air_time = None
+        self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
+        self.rewards.feet_air_time.weight = 0.01
+        # self.rewards.feet_air_time = None
 
         # self.rewards.undesired_contacts = None
         self.rewards.undesired_contacts.params["sensor_cfg"].body_names = "base|.*_thigh.*|.*_calf.*|.*_hip.*"
-        self.rewards.undesired_contacts.weight = -10 #-5.0
+        self.rewards.undesired_contacts.weight = -1000.0
 
-        self.rewards.action_rate_l2.weight = -0.02
+        self.rewards.action_rate_l2.weight = -0.05
 
         self.rewards.dof_torques_l2.weight = -0.0002
-        self.rewards.track_lin_vel_xy_exp.weight = 1.5  #4#1.5
-        self.rewards.track_ang_vel_z_exp.weight = 0.75
+        self.rewards.track_lin_vel_xy_exp.weight = 3  #1.5
+        self.rewards.track_ang_vel_z_exp.weight = 1   #0.75
         self.rewards.dof_acc_l2.weight = -2.5e-7
-        self.rewards.flat_orientation_l2.weight = -10#-20#-2 #-0.1#zyb-3  #-1#zyb-2         #-2#zyb-1
+        self.rewards.flat_orientation_l2.weight = -0.5
 
         
 
         # terminations
-        self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
+        self.terminations.base_contact.params["sensor_cfg"].body_names = "base|.*_thigh.*|.*_calf.*|.*_hip.*"
 
 
 @configclass
